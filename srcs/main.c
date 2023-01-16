@@ -13,7 +13,7 @@
 #include <unistd.h>
 #define PROCESSUS_NB 2
 
-void	receiver(int pipe_fd)
+void	receiver(char **envp, char *out_file, char *cmd, int *pipe_fd)
 {
 	close(pipe_fd[1]);
 	if (dup2(pipe_fd[0], 0) == -1)
@@ -30,6 +30,7 @@ void	receiver(int pipe_fd)
 	{
 		exit();
 	}
+	//split
 	if (execve(argv[2], argv, envp) == -1)
 	{
 		exit();
@@ -37,13 +38,14 @@ void	receiver(int pipe_fd)
 	
 }
 
-void	sender(int *pipe_fd, char **argv, char **envp)
+void	sender(char **envp, char *in_file, char *cmd, int *pipe_fd)
 {
 	close(pipe_fd[0]);
 	if (dup2(pipe_fd[1], 1) == -1)
 	{
 		exit();
 	}
+	//split
 	if (execve(argv[2], argv, envp) == -1)
 	{
 		exit();
@@ -51,11 +53,12 @@ void	sender(int *pipe_fd, char **argv, char **envp)
 	
 }
 
-int	main(int argc, char **argv)
+int	main(int argc, char **argv, char **envp)
 {
 	size_t	i;
 	int pipe_fd[2];
 	pid_t	pid;
+	int status;
 
 	if (argc != 5)
 	{
@@ -73,12 +76,12 @@ int	main(int argc, char **argv)
 		if (pid == 0)
 		{
 			if (i == 0)
-				sender(pipe, argv);
+				sender(envp, argv[1], argv[2], pipe);
 			else
-				receiver(pipe);
-;		}
-		else
-		{}
+				receiver(envp, argv[3], argv[4], pipe);
+		}
 	}
+	while (waitpid(pid, &status, 0) == -1)
+		;
 	return (0);
 }
