@@ -13,24 +13,24 @@
 CC = gcc
 CFLAGS = -Wall -Werror -Wextra
 NAME = pipex
-LIB1 = ./ft_printf/libftprintf.a
+LIB = ./libft/libft.a
 SRC = $(wildcard srcs/*.c)
 OBJ = $(SRC:.c=.o)
 
 all: $(NAME)
 
-$(NAME): $(OBJ) $(LIB1)
+$(NAME): $(OBJ) $(LIB)
 	$(CC) $^ -o $@
 
 %.o: %.c
 	$(CC) -o $@ -c $< $(CFLAGS) 
 	
-$(LIB1):
-	make -C ft_printf
+$(LIB):
+	make -C libft
 
 clean:
-	make -C ft_printf clean
-	rm -f $(LIB1)
+	make -C libft clean
+	rm -f $(LIB)
 	rm -f $(OBJ)
 
 fclean: clean
