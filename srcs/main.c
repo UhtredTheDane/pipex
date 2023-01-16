@@ -13,41 +13,63 @@
 #include <unistd.h>
 #define PROCESSUS_NB 2
 
-void	receiver(char **envp, char *out_file, char *cmd, int *pipe_fd)
+void	receiver(char **envp, char *out_file, char **argv, int *pipe_fd)
 {
+	int	*ft_stdout;
+	char **cmd;
+
 	close(pipe_fd[1]);
-	if (dup2(pipe_fd[0], 0) == -1)
-	{
-		exit();
-	}
+	cmd = ft_split(argv[4], ' ');
 	fd_stdout = open(argv[3], O_WRONLY);
 	if (fd_stdout == -1)
 	{
 		close(pipe_fd[0]);
-		return (0);
+		exit (1);
+	}
+	if (dup2(pipe_fd[0], 0) == -1)
+	{
+		close(pipe_fd[0]);
+		close(ft_stdout);
+		exit(2);
 	}
 	if (dup2(fd_stdout, 1) == -1)
 	{
-		exit();
+		close(pipe_fd[0]);
+		close(ft_stdout);
+		exit(2);
 	}
-	//split
-	if (execve(argv[2], argv, envp) == -1)
+	if (execve(cmd[0], cmd, envp) == -1)
 	{
-		exit();
+		close(pipe_fd[0]);
+		close(ft_stdout);
+		exit(3);
 	}
 	
 }
 
-void	sender(char **envp, char *in_file, char *cmd, int *pipe_fd)
+void	sender(char **envp, char *in_file, char **argv, int *pipe_fd)
 {
+	int	*ft_stdin;
+	char **cmd;
+
 	close(pipe_fd[0]);
+	cmd = ft_split(argv[2], ' ');
+	fd_stdin = open(argv[1], O_RDONLY);
+	if (fd_stdin == -1)
+	{
+		close(pipe_fd[1]);
+		exit (1);
+	}
 	if (dup2(pipe_fd[1], 1) == -1)
 	{
-		exit();
+		close(pipe_fd[1]);
+		close(fd_stdin);
+		exit(2);
 	}
-	//split
-	if (execve(argv[2], argv, envp) == -1)
+	if (cmd(argv[0], cmd, envp) == -1)
 	{
+		close(pipe_fd[1]);
+		close(fd_stdin);
 		exit();
 	}
 	
