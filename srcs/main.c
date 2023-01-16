@@ -13,15 +13,49 @@
 #include <unistd.h>
 #define PROCESSUS_NB 2
 
+void	receiver(int pipe_fd)
+{
+	close(pipe_fd[1]);
+	if (dup2(pipe_fd[0], 0) == -1)
+	{
+		exit();
+	}
+	fd_stdout = open(argv[3], O_WRONLY);
+	if (fd_stdout == -1)
+	{
+		close(pipe_fd[0]);
+		return (0);
+	}
+	if (dup2(fd_stdout, 1) == -1)
+	{
+		exit();
+	}
+	if (execve(argv[2], argv, envp) == -1)
+	{
+		exit();
+	}
+	
+}
+
+void	sender(int *pipe_fd, char **argv, char **envp)
+{
+	close(pipe_fd[0]);
+	if (dup2(pipe_fd[1], 1) == -1)
+	{
+		exit();
+	}
+	if (execve(argv[2], argv, envp) == -1)
+	{
+		exit();
+	}
+	
+}
+
 int	main(int argc, char **argv)
 {
 	size_t	i;
 	int pipe_fd[2];
 	pid_t	pid;
-	int	res_pipe;
-	int fd_stdin;
-	int fd_stdout;
-	size_t	size_bytes;
 
 	if (argc != 5)
 	{
@@ -29,8 +63,7 @@ int	main(int argc, char **argv)
 		return (0);
 	}
 	
-	res_pipe = pipe(pipe_fd)
-	if (res_pipe == -1)
+	if (pipe(pipe_fd))
 		return (0);
 
 
@@ -40,28 +73,10 @@ int	main(int argc, char **argv)
 		if (pid == 0)
 		{
 			if (i == 0)
-			{
-				close(pipe_fd[0]);
-				fd_stdin = open(argv[1], O_RDONLY);
-				if (fd_stdin == -1)
-				{
-					close(pipe_fd[1]);
-					return (0);
-				}
-				size_bytes = read(fd_stdin, );
-				
-			}
+				sender(pipe, argv);
 			else
-			{
-				close(pipe_fd[1]);
-				fd_stdout = open(argv[3], O_WRONLY);
-				if (fd_stdout == -1)
-				{
-					close(pipe_fd[0]);
-					return (0);
-				}
-			}
-		}
+				receiver(pipe);
+;		}
 		else
 		{}
 	}
