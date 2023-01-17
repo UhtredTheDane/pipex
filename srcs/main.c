@@ -21,7 +21,28 @@
 #define PROCESSUS_NB 2
 char	**ft_split(char const *s, char c);
 
-void	receiver(char **envp, char **argv, int *pipe_fd)
+void	free_cmd(char **cmd)
+{
+	size_t	i;
+
+	i = 0;
+	while (cmd[i])
+	{
+		free(cmd[i]);
+		++i;
+	}
+	free(cmd);
+}
+
+void	clean_exit(char **cmd, int pipe_fd, int file_fd, int exit_value)
+{
+	close(pipe_fd);
+	close(file_fd);
+	free_cmd(cmd);
+	exit(exit_value);
+}
+
+void	receiver(char **argv, char **envp, int *pipe_fd)
 {
 	int	fd_stdout;
 	char **cmd;
@@ -29,82 +50,78 @@ void	receiver(char **envp, char **argv, int *pipe_fd)
 	close(pipe_fd[1]);
 	cmd = ft_split(argv[3], ' ');
 	if (!cmd)
-		printf("gros bug\n");
+	{
+		ft_printf("Impossible de formater la commande pour execve\n");
+		close(pipe_fd[0]);
+		free_cmd(cmd)
+		exit(5);
+	}
 	fd_stdout = open(argv[4], O_WRONLY | O_CREAT);
 	if (fd_stdout == -1)
 	{
 		close(pipe_fd[0]);
-		exit(1);
+		free_cmd(cmd);
+		exit(2);
 	}
 	if (dup2(pipe_fd[0], 0) == -1)
-	{
-		close(pipe_fd[0]);
-		close(fd_stdout);
-		exit(2);
-	}
+		clean_exit(cmd, pipe_fd[0], fd_stdout, 3);
 	if (dup2(fd_stdout, 1) == -1)
-	{
-		close(pipe_fd[0]);
-		close(fd_stdout);
-		exit(2);
-	}
+		clean_exit(cmd, pipe_fd[0], fd_stdout, 3);
 	if (execve(cmd[0], cmd, envp) == -1)
-	{
-		close(pipe_fd[0]);
-		close(fd_stdout);
-		exit(3);
-	}
+		clean_exit(cmd, pipe_fd[0], fd_stdout, 3);
 }
 
-void	sender(char **envp, char **argv, int *pipe_fd)
+void	sender(char **argv, char **envp, int *pipe_fd)
 {
 	int	fd_stdin;
 	char **cmd;
 
 	close(pipe_fd[0]);
 	cmd = ft_split(argv[2], ' ');
+	if (!cmd)
+	{
+		printf("Impossible de formater la commande pour execve\n");
+		close(pipe_fd[1]);
+		free_cmd(cmd);
+		exit(5);
+	}
 	fd_stdin = open(argv[1], O_RDONLY);
 	if (fd_stdin == -1)
 	{
 		close(pipe_fd[1]);
+		free_cmd(cmd);
 		exit (1);
 	}
 	if (dup2(fd_stdin, 0) == -1)
-	{
-		close(pipe_fd[1]);
-		close(fd_stdin);
-		exit(2);
-	}
+		clean_exit(cmd, pipe_fd[1], fd_stdin, 3);
 	if (dup2(pipe_fd[1], 1) == -1)
-	{
-		close(pipe_fd[1]);
-		close(fd_stdin);
-		exit(2);
-	}
+		clean_exit(cmd, pipe_fd[1], fd_stdin, 3);
 	if (execve(cmd[0], cmd, envp) == -1)
-	{
-		close(pipe_fd[1]);
-		close(fd_stdin);
-		exit(3);
-	}
-	
+		clean_exit(cmd, pipe_fd[1], fd_stdin, 4);
 }
 
-int	main(int argc, char **argv, char **envp)
+void	error_management(int status)
 {
-	int pipe_fd[2];
-	pid_t	pid;
-	int status;
-	size_t i;
+	int exit_value;
 
-	if (argc != 5)
+	if (WIFEXITED(status))
 	{
-		printf("Pas le bon nombre d arguments.\n");
-		return (0);
+		exit_value = WEXITSTATUS(status);
+		if (exit_value == 1)
+			perror("Problème avec in_file");
+		else if (exit_value == 2)
+			perror("Problème avec out_file");
+		else if (exit_value == 3)
+			perror("Problème avec dup2");
+		else if (exit_value == 4)
+			perror("Problème avec execve");
 	}
-	
-	if (pipe(pipe_fd))
-		return (0);
+}
+
+void run_pipe(char **argv, char **envp, int *pipe_fd)
+{
+	size_t i;
+	pid_t	pid;
 
 	i = 0;
 	while (i < PROCESSUS_NB)
@@ -112,24 +129,33 @@ int	main(int argc, char **argv, char **envp)
 		pid = fork();
 		if (pid < 0)
 		{
-			perror("Erreur fork");
+			perror("Probleme fork %d", i);
 			return (1);
 		}
 		else if (pid == 0)
 		{
 			if (i == 0)
-				sender(envp, argv, pipe_fd);
+				sender(argv, envp, pipe_fd);
 			else
-				receiver(envp, argv, pipe_fd);
+				receiver(argv, envp, pipe_fd);
 		}
 		++i;
 	}
-	int return_value;
-	waitpid(-1, &status, 0);
-	if (WIFEXITED(status))
+}
+int	main(int argc, char **argv, char **envp)
+{
+	int pipe_fd[2];
+	int status;
+	
+	if (argc != 5)
 	{
-		return_value = WEXITEDSTATUS(status);
-		printf("return_value: %d\n", return_value);
-   f	}
+		printf("Pas le bon nombre d arguments.\n");
+		return (0);
+	}
+	if (pipe(pipe_fd))
+		return (0);
+	run_pipe(argv, envp, pipe_fd);
+	waitpid(-1, &status, 0);
+	error_management(status);
 	return (0);
 }
