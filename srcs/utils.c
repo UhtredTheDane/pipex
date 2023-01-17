@@ -65,9 +65,12 @@ char	**make_cmd(char *one_string_cmd, char **envp)
 		++i;
 	temp = cmd[0];
 	cmd[0] = make_path(envp[i] + 5, cmd[0]);
-	if (!cmd[0])
-		return (NULL);
 	free(temp);
+	if (!cmd[0])
+	{
+		free_2d_tab(cmd);
+		return (NULL);
+	}
 	return (cmd);
 }
 
