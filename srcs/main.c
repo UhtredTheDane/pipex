@@ -124,7 +124,12 @@ int	main(int argc, char **argv, char **envp)
 		}
 		++i;
 	}
-	i = 0;
+	int return_value;
 	waitpid(-1, &status, 0);
+	if (WIFEXITED(status))
+	{
+		return_value = WEXITEDSTATUS(status);
+		printf("return_value: %d\n", return_value);
+   f	}
 	return (0);
 }
