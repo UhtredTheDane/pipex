@@ -6,7 +6,7 @@
 /*   By: agengemb <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/15 22:01:42 by agengemb          #+#    #+#             */
-/*   Updated: 2023/01/16 21:57:27 by agengemb         ###   ########.fr       */
+/*   Updated: 2023/01/17 03:34:52 by agengemb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,9 +51,9 @@ void	receiver(char **argv, char **envp, int *pipe_fd)
 	cmd = ft_split(argv[3], ' ');
 	if (!cmd)
 	{
-		ft_printf("Impossible de formater la commande pour execve\n");
+		printf("Impossible de formater la commande pour execve\n");
 		close(pipe_fd[0]);
-		free_cmd(cmd)
+		free_cmd(cmd);
 		exit(5);
 	}
 	fd_stdout = open(argv[4], O_WRONLY | O_CREAT);
@@ -129,8 +129,8 @@ void run_pipe(char **argv, char **envp, int *pipe_fd)
 		pid = fork();
 		if (pid < 0)
 		{
-			perror("Probleme fork %d", i);
-			return (1);
+			perror("Probleme fork");
+			exit(1);
 		}
 		else if (pid == 0)
 		{
