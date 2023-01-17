@@ -6,20 +6,56 @@
 /*   By: agengemb <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/15 22:01:42 by agengemb          #+#    #+#             */
-/*   Updated: 2023/01/17 03:34:52 by agengemb         ###   ########.fr       */
+/*   Updated: 2023/01/17 20:16:31 by agengemb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "../include/pipex.h"
 
-#define PROCESSUS_NB 2
-char	**ft_split(char const *s, char c);
+char	*search_path(char *path, char *cmd_0)
+{
+	char	**all_paths;
+	char	*good_path;
+	size_t	i;
+
+	all_paths = ft_split(path, ':');
+	if (!all_paths)
+		return (NULL);
+	i = 0;
+	while (all_paths[i])
+	{
+		good_path = ft_strjoin(all_paths[i], cmd_0);
+		if (!good_path)
+			return (NULL);
+		if (access(good_path, F_OK) == 0)
+			return (good_path);
+		++i;
+	}
+	return (NULL);
+}
+
+char	**make_cmd(char *one_string_cmd, char **envp)
+{
+	char	**cmd;
+	char	*temp;
+	size_t	i;
+
+	cmd = ft_split(one_string_cmd, ' ');
+	if (!cmd)
+		return (NULL)
+	temp = cmd[0];
+	cmd[0] = ft_strjoin("/", temp);
+	free(temp);
+	i = 0;
+	while (envp[i] && ft_strncmp(envp[i], "PATH=", 5) != 0)
+		++i;
+	temp = cmd[0];
+	cmd[0] = search_path(envp[i][5], cmd[0]);
+	if (!cmd[0])
+		return (NULL);
+	free(temp);
+	return (cmd);
+}
 
 void	receiver(char **argv, char **envp, int *pipe_fd)
 {
@@ -27,7 +63,7 @@ void	receiver(char **argv, char **envp, int *pipe_fd)
 	char **cmd;
 
 	close(pipe_fd[1]);
-	cmd = ft_split(argv[3], ' ');
+	cmd = make_cmd(argv[3], envp);
 	if (!cmd)
 	{
 		printf("Impossible de formater la commande pour execve\n");
@@ -56,7 +92,7 @@ void	sender(char **argv, char **envp, int *pipe_fd)
 	char **cmd;
 
 	close(pipe_fd[0]);
-	cmd = ft_split(argv[2], ' ');
+	cmd = make_cmd(argv[2], envp);
 	if (!cmd)
 	{
 		printf("Impossible de formater la commande pour execve\n");
