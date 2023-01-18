@@ -12,6 +12,26 @@
 
 #include "../include/pipex.h"
 
+char	**make_cmd(char *one_string_cmd, char **envp)
+{
+	char	**cmd;
+	size_t	i;
+
+	cmd = ft_split(one_string_cmd, ' ');
+	if (!cmd)
+		return (NULL);
+	cmd[0] = format_string(cmd);
+	if (!cmd[0])
+		return (NULL);
+	i = 0;
+	while (envp[i] && ft_strncmp(envp[i], "PATH=", 5) != 0)
+		++i;
+	cmd[0] = find_path(cmd):
+	if (!cmd[0])
+		return (NULL);
+	return (cmd);
+}
+
 void	receiver(char **argv, char **envp, int *pipe_fd)
 {
 	int		fd_stdout;

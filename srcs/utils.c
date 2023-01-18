@@ -12,7 +12,35 @@
 
 #include "../include/pipex.h"
 
-char	*find_path(char **all_paths, char *cmd_0)
+char	*format_string(char **cmd)
+{
+	char	*temp;
+
+	temp = ft_strjoin("/", cmd[0]);
+	if (!temp)
+	{
+		clean_2d_tab(cmd);
+		return (NULL);
+	}
+	free(cmd[0]);
+	return(temp);
+}
+
+char	*find_path(char **cmd)
+{
+	char	*temp;
+
+	temp = get_path(envp[i] + 5, cmd[0]);
+	if (!temp)
+	{
+		clean_2d_tab(cmd);
+		return (NULL);
+	}
+	free(cmd[0]);
+	return(temp);
+}
+
+char	*test_path(char **all_paths, char *cmd_0)
 {
 	size_t	i;
 	char	*good_path;
@@ -31,7 +59,7 @@ char	*find_path(char **all_paths, char *cmd_0)
 	return (NULL);
 }
 
-char	*make_path(char *path, char *cmd_0)
+char	*get_path(char *path, char *cmd_0)
 {
 	char	**all_paths;
 	char	*cmd_path;
@@ -39,73 +67,7 @@ char	*make_path(char *path, char *cmd_0)
 	all_paths = ft_split(path, ':');
 	if (!all_paths)
 		return (NULL);
-	cmd_path = find_path(all_paths, cmd_0);
-	free_2d_tab(all_paths);
+	cmd_path = test_path(all_paths, cmd_0);
+	clean_2d_tab(all_paths);
 	return (cmd_path);
-}
-
-char	**make_cmd(char *one_string_cmd, char **envp)
-{
-	char	**cmd;
-	char	*temp;
-	size_t	i;
-
-	cmd = ft_split(one_string_cmd, ' ');
-	if (!cmd)
-		return (NULL);
-	temp = ft_strjoin("/", cmd[0]);
-	if (!temp)
-	{
-		free_2d_tab(cmd);
-		return (NULL);
-	}
-	free(cmd[0]);
-	cmd[0] = temp;
-	i = 0;
-	while (envp[i] && ft_strncmp(envp[i], "PATH=", 5) != 0)
-		++i;
-	temp = make_path(envp[i] + 5, cmd[0]);
-	if (!temp)
-	{
-		free_2d_tab(cmd);
-		return (NULL);
-	}
-	free(cmd[0]);
-	cmd[0] = temp;
-	return (cmd);
-}
-
-void	free_2d_tab(char **tab_2d)
-{
-	size_t	i;
-
-	i = 0;
-	while (tab_2d[i])
-	{
-		if (tab_2d[i])
-			free(tab_2d[i]);
-		++i;
-	}
-	free(tab_2d);
-}
-
-void	clean_exit(char **tab_2d, int pipe_fd, int file_fd, int exit_value)
-{
-	if (pipe_fd > -1)
-		close(pipe_fd);
-	if (file_fd > -1)
-		close(file_fd);
-	if (tab_2d)
-		free_2d_tab(tab_2d);
-	if (exit_value == 1)
-		perror("Problème avec in_file");
-	else if (exit_value == 2)
-		perror("Problème avec out_file");
-	else if (exit_value == 3)
-		perror("Problème avec dup2");
-	else if (exit_value == 4)
-		perror("Problème avec execve");
-	else if (exit_value == 5)
-		printf("Impossible de formater la commande pour execve\n");
-	exit(exit_value);
 }

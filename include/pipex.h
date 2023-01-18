@@ -31,10 +31,12 @@ char	**ft_split(char const *s, char c);
 void	receiver(char **argv, char **envp, int *pipe_fd);
 void	sender(char **argv, char **envp, int *pipe_fd);
 void	run_pipe(char **argv, char **envp, int *pipe_fd);
-char	*find_path(char **all_paths, char *cmd_0);
-char	*make_path(char *path, char *cmd_0);
+char	*test_path(char **all_paths, char *cmd_0);
+char	*get_path(char *path, char *cmd_0);
 char	**make_cmd(char *one_string_cmd, char **envp);
-void	free_2d_tab(char **cmd);
+void	clean_2d_tab(char **cmd);
 void	clean_exit(char **cmd, int pipe_fd, int file_fd, int exit_value);
+char	*format_string(char **cmd);
+char	*find_path(char **cmd);
 
 #endif
