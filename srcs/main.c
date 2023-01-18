@@ -6,7 +6,7 @@
 /*   By: agengemb <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/15 22:01:42 by agengemb          #+#    #+#             */
-/*   Updated: 2023/01/18 00:05:16 by agengemb         ###   ########.fr       */
+/*   Updated: 2023/01/18 02:11:44 by agengemb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void	receiver(char **argv, char **envp, int *pipe_fd)
 	cmd = make_cmd(argv[3], envp);
 	if (!cmd)
 		clean_exit(cmd, pipe_fd[0], fd_stdout, 5);
-	fd_stdout = open(argv[4], O_WRONLY | O_CREAT);
+	fd_stdout = open(argv[4], O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
 	if (fd_stdout == -1)
 		clean_exit(cmd, pipe_fd[0], fd_stdout, 2);
 	if (dup2(pipe_fd[0], 0) == -1)

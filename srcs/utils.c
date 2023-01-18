@@ -6,7 +6,7 @@
 /*   By: agengemb <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/17 20:15:48 by agengemb          #+#    #+#             */
-/*   Updated: 2023/01/18 00:06:47 by agengemb         ###   ########.fr       */
+/*   Updated: 2023/01/18 02:04:15 by agengemb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,30 +22,26 @@ char	*find_path(char **all_paths, char *cmd_0)
 	{
 		good_path = ft_strjoin(all_paths[i], cmd_0);
 		if (!good_path)
-		{
-			free_2d_tab(all_paths);
 			return (NULL);
-		}
 		if (access(good_path, F_OK) == 0)
-		{
-			free_2d_tab(all_paths);
 			return (good_path);
-		}
 		++i;
 		free(good_path);
 	}
-	free_2d_tab(all_paths);
 	return (NULL);
 }
 
 char	*make_path(char *path, char *cmd_0)
 {
 	char	**all_paths;
+	char	*cmd_path;
 
 	all_paths = ft_split(path, ':');
 	if (!all_paths)
 		return (NULL);
-	return (find_path(all_paths, cmd_0));
+	cmd_path = find_path(all_paths, cmd_0);
+	free_2d_tab(all_paths);
+	return (cmd_path);
 }
 
 char	**make_cmd(char *one_string_cmd, char **envp)
@@ -57,20 +53,25 @@ char	**make_cmd(char *one_string_cmd, char **envp)
 	cmd = ft_split(one_string_cmd, ' ');
 	if (!cmd)
 		return (NULL);
-	temp = cmd[0];
-	cmd[0] = ft_strjoin("/", temp);
-	free(temp);
-	i = 0;
-	while (envp[i] && ft_strncmp(envp[i], "PATH=", 5) != 0)
-		++i;
-	temp = cmd[0];
-	cmd[0] = make_path(envp[i] + 5, cmd[0]);
-	free(temp);
-	if (!cmd[0])
+	temp = ft_strjoin("/", cmd[0]);
+	if (!temp)
 	{
 		free_2d_tab(cmd);
 		return (NULL);
 	}
+	free(cmd[0]);
+	cmd[0] = temp;
+	i = 0;
+	while (envp[i] && ft_strncmp(envp[i], "PATH=", 5) != 0)
+		++i;
+	temp = make_path(envp[i] + 5, cmd[0]);
+	if (!temp)
+	{
+		free_2d_tab(cmd);
+		return (NULL);
+	}
+	free(cmd[0]);
+	cmd[0] = temp;
 	return (cmd);
 }
 
@@ -81,7 +82,8 @@ void	free_2d_tab(char **tab_2d)
 	i = 0;
 	while (tab_2d[i])
 	{
-		free(tab_2d[i]);
+		if (tab_2d[i])
+			free(tab_2d[i]);
 		++i;
 	}
 	free(tab_2d);
