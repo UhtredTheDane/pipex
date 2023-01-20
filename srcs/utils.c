@@ -6,7 +6,7 @@
 /*   By: agengemb <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/17 20:15:48 by agengemb          #+#    #+#             */
-/*   Updated: 2023/01/18 02:04:15 by agengemb         ###   ########.fr       */
+/*   Updated: 2023/01/18 03:15:29 by agengemb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,10 @@ char	*format_string(char **cmd)
 		return (NULL);
 	}
 	free(cmd[0]);
-	return(temp);
+	return (temp);
 }
 
-char	*find_path(char **cmd)
+char	*find_path(char **envp, char **cmd, size_t i)
 {
 	char	*temp;
 
@@ -37,7 +37,7 @@ char	*find_path(char **cmd)
 		return (NULL);
 	}
 	free(cmd[0]);
-	return(temp);
+	return (temp);
 }
 
 char	*test_path(char **all_paths, char *cmd_0)

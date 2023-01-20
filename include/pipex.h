@@ -6,7 +6,7 @@
 /*   By: agengemb <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/16 06:27:36 by agengemb          #+#    #+#             */
-/*   Updated: 2023/01/18 00:07:46 by agengemb         ###   ########.fr       */
+/*   Updated: 2023/01/18 02:47:51 by agengemb         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,6 @@ char	**make_cmd(char *one_string_cmd, char **envp);
 void	clean_2d_tab(char **cmd);
 void	clean_exit(char **cmd, int pipe_fd, int file_fd, int exit_value);
 char	*format_string(char **cmd);
-char	*find_path(char **cmd);
+char	*find_path(char **envp, char **cmd, size_t i);
 
 #endif
