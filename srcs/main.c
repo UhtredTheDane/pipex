@@ -37,21 +37,17 @@ char	**make_cmd(char *one_string_cmd, char **envp)
 
 void	receiver(char **argv, char **envp, int *pipe_fd)
 {
-	int		fd_stdout;
 	char	**cmd;
 
 	close(pipe_fd[1]);
 	cmd = NULL;
-	fd_stdout = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR
-			| S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+
 	if (fd_stdout == -1)
 		clean_exit(cmd, pipe_fd[0], fd_stdout, 2);
 	cmd = make_cmd(argv[3], envp);
 	if (!cmd)
 		clean_exit(cmd, pipe_fd[0], fd_stdout, 5);
 	if (dup2(pipe_fd[0], 0) == -1)
-		clean_exit(cmd, pipe_fd[0], fd_stdout, 3);
-	if (dup2(fd_stdout, 1) == -1)
 		clean_exit(cmd, pipe_fd[0], fd_stdout, 3);
 	close(pipe_fd[0]);
 	if (execve(cmd[0], cmd, envp) == -1)
